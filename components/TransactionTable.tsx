@@ -47,7 +47,7 @@ export function TransactionTable({ transactions, onEdit, onDelete }: Transaction
           No transactions found for this month
         </p>
         <p className="text-gray-400 dark:text-gray-500 text-sm mt-2">
-          Click "Add Transaction" to get started
+          Click &quot;Add Transaction&quot; to get started
         </p>
       </div>
     )

@@ -71,6 +71,7 @@ export function TransactionForm({ transaction, onSuccess, onCancel }: Transactio
         setAccountId(accounts[0].id)
       }
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [transaction, accounts])
 
   const validate = (): boolean => {
