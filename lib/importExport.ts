@@ -147,7 +147,29 @@ export function importData(data: ExportData, merge: boolean = false): {
 
       // Recalculate all account balances
       mergedAccounts.forEach(account => {
-        recalculateAccountBalance(account.id)
+        const transactions = getTransactions()
+        let balanceChange = 0
+        
+        // Transactions from this account
+        const outgoingTransactions = transactions.filter(t => t.accountId === account.id)
+        outgoingTransactions.forEach(transaction => {
+          if (transaction.type === 'income') {
+            balanceChange += transaction.amount
+          } else if (transaction.type === 'expense') {
+            balanceChange -= transaction.amount
+          } else if (transaction.type === 'transfer' && transaction.toAccountId) {
+            balanceChange -= transaction.amount
+          }
+        })
+        
+        // Transfers to this account
+        const incomingTransfers = transactions.filter(t => t.type === 'transfer' && t.toAccountId === account.id)
+        incomingTransfers.forEach(transaction => {
+          balanceChange += transaction.amount
+        })
+        
+        const currentBalance = (account.initialBalance || 0) + balanceChange
+        updateAccount(account.id, { balance: currentBalance })
       })
 
       return {
