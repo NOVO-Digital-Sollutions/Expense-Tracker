@@ -5,9 +5,9 @@ const nextConfig = {
   images: {
     unoptimized: true,
   },
-  // Set base path if deploying to a subdirectory (e.g., /repo-name)
-  // basePath: process.env.NODE_ENV === 'production' ? '/novo-expense-tracker' : '',
-  // assetPrefix: process.env.NODE_ENV === 'production' ? '/novo-expense-tracker' : '',
+  // Set base path for GitHub Pages subdirectory deployment
+  basePath: process.env.NODE_ENV === 'production' ? '/Expense-Tracker' : '',
+  assetPrefix: process.env.NODE_ENV === 'production' ? '/Expense-Tracker' : '',
 }
 
 module.exports = nextConfig
