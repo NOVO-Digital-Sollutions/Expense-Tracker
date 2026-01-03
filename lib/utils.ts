@@ -2,7 +2,7 @@
  * Utility functions for date handling and calculations
  */
 
-import { Transaction, MonthlySummary, CategorySummary } from '@/types'
+import { Transaction, TransactionType, MonthlySummary, CategorySummary } from '@/types'
 import { format, startOfMonth, endOfMonth, parseISO } from 'date-fns'
 
 /**
