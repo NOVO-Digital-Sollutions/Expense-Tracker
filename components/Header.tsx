@@ -7,13 +7,15 @@
 import { Moon, Sun, Plus, Wallet } from 'lucide-react'
 import { useTheme } from './ThemeProvider'
 import { Button } from './Button'
+import { ImportExport } from './ImportExport'
 
 interface HeaderProps {
   onAddTransaction: () => void
   onManageAccounts: () => void
+  onDataChanged: () => void
 }
 
-export function Header({ onAddTransaction, onManageAccounts }: HeaderProps) {
+export function Header({ onAddTransaction, onManageAccounts, onDataChanged }: HeaderProps) {
   const { theme, toggleTheme } = useTheme()
 
   return (
@@ -30,14 +32,16 @@ export function Header({ onAddTransaction, onManageAccounts }: HeaderProps) {
           </div>
           
           <div className="flex items-center gap-3">
-            <Button
-              variant="secondary"
-              onClick={onManageAccounts}
-              className="flex items-center gap-2"
-            >
-              <Wallet className="w-4 h-4" />
-              <span className="hidden sm:inline">Accounts</span>
-            </Button>
+        <Button
+          variant="secondary"
+          onClick={onManageAccounts}
+          className="flex items-center gap-2"
+        >
+          <Wallet className="w-4 h-4" />
+          <span className="hidden sm:inline">Accounts</span>
+        </Button>
+
+        <ImportExport onDataChanged={onDataChanged} />
             
             <Button
               variant="primary"

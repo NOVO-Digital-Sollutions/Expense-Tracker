@@ -104,13 +104,22 @@ export default function Home() {
     loadTransactions() // Reload transactions in case account was deleted
   }
 
+  const handleDataChanged = () => {
+    loadAccounts()
+    loadTransactions()
+  }
+
   const handleExportPDF = () => {
     exportToPDF(filteredTransactions, summary, selectedMonth, selectedYear, accounts)
   }
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      <Header onAddTransaction={handleAddTransaction} onManageAccounts={handleManageAccounts} />
+      <Header
+        onAddTransaction={handleAddTransaction}
+        onManageAccounts={handleManageAccounts}
+        onDataChanged={handleDataChanged}
+      />
       
       <main className="container mx-auto px-4 py-8">
         <MonthFilter
