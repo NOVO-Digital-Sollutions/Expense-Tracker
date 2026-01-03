@@ -68,9 +68,9 @@ export function exportToPDF(
     const totalBalance = accounts.reduce((sum, acc) => sum + acc.balance, 0)
     currentY = (doc as any).lastAutoTable.finalY + 10
     doc.setFontSize(10)
-    doc.setFont(undefined, 'bold')
+    doc.setFont('helvetica', 'bold')
     doc.text(`Total Balance: ${formatCurrency(totalBalance)}`, 14, currentY)
-    doc.setFont(undefined, 'normal')
+    doc.setFont('helvetica', 'normal')
     currentY += 15
   }
 
