@@ -6,7 +6,8 @@
 
 import { TrendingUp, TrendingDown, Wallet, CreditCard, Banknote } from 'lucide-react'
 import { MonthlySummary, Account } from '@/types'
-import { formatCurrency } from '@/lib/utils'
+import { formatCurrency, calculateCreditCardInfo } from '@/lib/utils'
+import { getTransactions } from '@/lib/storage'
 
 interface SummaryCardsProps {
   summary: MonthlySummary
@@ -122,6 +123,13 @@ export function SummaryCards({ summary, accounts, totalBalance }: SummaryCardsPr
                 account.type === 'bank' ? CreditCard :
                 Banknote
 
+              // For credit cards, show credit limit and used amount
+              const isCreditCard = account.type === 'credit'
+              const allTransactions = getTransactions()
+              const creditCardInfo = isCreditCard
+                ? calculateCreditCardInfo(account.id, allTransactions, account.initialBalance)
+                : null
+
               return (
                 <div
                   key={account.id}
@@ -142,15 +150,42 @@ export function SummaryCards({ summary, accounts, totalBalance }: SummaryCardsPr
                       </div>
                     </div>
                   </div>
-                  <div className="mt-2">
-                    <p className={`text-2xl font-bold ${
-                      account.balance >= 0
-                        ? 'text-gray-900 dark:text-gray-100'
-                        : 'text-red-600 dark:text-red-400'
-                    }`}>
-                      {formatCurrency(account.balance)}
-                    </p>
-                  </div>
+                  {isCreditCard && creditCardInfo ? (
+                    <div className="mt-2 space-y-2">
+                      <div>
+                        <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Credit Limit</p>
+                        <p className="text-xl font-bold text-gray-900 dark:text-gray-100">
+                          {formatCurrency(creditCardInfo.creditLimit)}
+                        </p>
+                      </div>
+                      <div className="pt-2 border-t border-gray-200 dark:border-gray-700">
+                        <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Used</p>
+                        <p className="text-xl font-bold text-orange-600 dark:text-orange-400">
+                          {formatCurrency(creditCardInfo.used)}
+                        </p>
+                      </div>
+                      <div className="pt-1">
+                        <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Available</p>
+                        <p className={`text-lg font-semibold ${
+                          creditCardInfo.available > 0
+                            ? 'text-green-600 dark:text-green-400'
+                            : 'text-red-600 dark:text-red-400'
+                        }`}>
+                          {formatCurrency(creditCardInfo.available)}
+                        </p>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="mt-2">
+                      <p className={`text-2xl font-bold ${
+                        account.balance >= 0
+                          ? 'text-gray-900 dark:text-gray-100'
+                          : 'text-red-600 dark:text-red-400'
+                      }`}>
+                        {formatCurrency(account.balance)}
+                      </p>
+                    </div>
+                  )}
                 </div>
               )
             })}

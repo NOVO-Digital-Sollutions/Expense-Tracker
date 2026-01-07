@@ -96,3 +96,51 @@ export function getCurrentMonthDates() {
     month: now.getMonth(),
   }
 }
+
+/**
+ * Calculate credit card used amount and available credit
+ * For credit cards: used = expenses - income (payments) + transfers out - transfers in
+ * Available = credit limit - used
+ */
+export function calculateCreditCardInfo(accountId: string, transactions: Transaction[], creditLimit: number): {
+  used: number
+  available: number
+  creditLimit: number
+} {
+  let used = 0
+  
+  // Expenses charged to this credit card (increases used)
+  const expenses = transactions.filter(
+    t => t.accountId === accountId && t.type === 'expense'
+  )
+  expenses.forEach(t => used += t.amount)
+  
+  // Income (payments) to this credit card (decreases used)
+  const payments = transactions.filter(
+    t => t.accountId === accountId && t.type === 'income'
+  )
+  payments.forEach(t => used -= t.amount)
+  
+  // Transfers out from this credit card (increases used)
+  const transfersOut = transactions.filter(
+    t => t.accountId === accountId && t.type === 'transfer' && t.toAccountId
+  )
+  transfersOut.forEach(t => used += t.amount)
+  
+  // Transfers in to this credit card (decreases used)
+  const transfersIn = transactions.filter(
+    t => t.type === 'transfer' && t.toAccountId === accountId
+  )
+  transfersIn.forEach(t => used -= t.amount)
+  
+  // Ensure used doesn't go negative (overpayment scenario)
+  used = Math.max(0, used)
+  
+  const available = Math.max(0, creditLimit - used)
+  
+  return {
+    used,
+    available,
+    creditLimit,
+  }
+}

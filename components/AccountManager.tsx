@@ -7,7 +7,8 @@
 import { useState, useEffect } from 'react'
 import { Account } from '@/types'
 import { getAccounts, deleteAccount } from '@/lib/accounts'
-import { formatCurrency } from '@/lib/utils'
+import { formatCurrency, calculateCreditCardInfo } from '@/lib/utils'
+import { getTransactions } from '@/lib/storage'
 import { Button } from './Button'
 import { Modal } from './Modal'
 import { AccountForm } from './AccountForm'
@@ -89,65 +90,91 @@ export function AccountManager({ isOpen, onClose, onAccountChange }: AccountMana
             </div>
           ) : (
             <div className="space-y-3">
-              {accounts.map(account => (
-                <div
-                  key={account.id}
-                  className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700"
-                >
-                  <div className="flex items-center gap-3">
-                    <div className={`p-2 rounded-full ${
-                      account.type === 'wallet'
-                        ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400'
-                        : account.type === 'bank'
-                        ? 'bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400'
-                        : 'bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400'
-                    }`}>
-                      {account.type === 'wallet' ? (
-                        <Wallet className="w-5 h-5" />
-                      ) : account.type === 'bank' ? (
-                        <CreditCard className="w-5 h-5" />
-                      ) : (
-                        <Banknote className="w-5 h-5" />
-                      )}
-                    </div>
-                    <div>
-                      <p className="font-medium text-gray-900 dark:text-gray-100">{account.name}</p>
-                      <p className="text-sm text-gray-500 dark:text-gray-400 capitalize">{account.type}</p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-4">
-                    <div className="text-right">
-                      <p className={`font-semibold ${
-                        account.balance >= 0
-                          ? 'text-gray-900 dark:text-gray-100'
-                          : 'text-red-600 dark:text-red-400'
+              {accounts.map(account => {
+                const isCreditCard = account.type === 'credit'
+                const allTransactions = getTransactions()
+                const creditCardInfo = isCreditCard
+                  ? calculateCreditCardInfo(account.id, allTransactions, account.initialBalance)
+                  : null
+
+                return (
+                  <div
+                    key={account.id}
+                    className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className={`p-2 rounded-full ${
+                        account.type === 'wallet'
+                          ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400'
+                          : account.type === 'bank'
+                          ? 'bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400'
+                          : 'bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400'
                       }`}>
-                        {formatCurrency(account.balance)}
-                      </p>
+                        {account.type === 'wallet' ? (
+                          <Wallet className="w-5 h-5" />
+                        ) : account.type === 'bank' ? (
+                          <CreditCard className="w-5 h-5" />
+                        ) : (
+                          <Banknote className="w-5 h-5" />
+                        )}
+                      </div>
+                      <div>
+                        <p className="font-medium text-gray-900 dark:text-gray-100">{account.name}</p>
+                        <p className="text-sm text-gray-500 dark:text-gray-400 capitalize">{account.type}</p>
+                      </div>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleEditAccount(account)}
-                        className="p-1.5"
-                        aria-label="Edit account"
-                      >
-                        <Edit className="w-4 h-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleDeleteAccount(account.id)}
-                        className="p-1.5 text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300"
-                        aria-label="Delete account"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
+                    <div className="flex items-center gap-4">
+                      {isCreditCard && creditCardInfo ? (
+                        <div className="text-right">
+                          <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Limit / Used</p>
+                          <p className="font-semibold text-gray-900 dark:text-gray-100">
+                            {formatCurrency(creditCardInfo.creditLimit)} / <span className="text-orange-600 dark:text-orange-400">{formatCurrency(creditCardInfo.used)}</span>
+                          </p>
+                          <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                            Available: <span className={`font-medium ${
+                              creditCardInfo.available > 0
+                                ? 'text-green-600 dark:text-green-400'
+                                : 'text-red-600 dark:text-red-400'
+                            }`}>
+                              {formatCurrency(creditCardInfo.available)}
+                            </span>
+                          </p>
+                        </div>
+                      ) : (
+                        <div className="text-right">
+                          <p className={`font-semibold ${
+                            account.balance >= 0
+                              ? 'text-gray-900 dark:text-gray-100'
+                              : 'text-red-600 dark:text-red-400'
+                          }`}>
+                            {formatCurrency(account.balance)}
+                          </p>
+                        </div>
+                      )}
+                      <div className="flex items-center gap-2">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleEditAccount(account)}
+                          className="p-1.5"
+                          aria-label="Edit account"
+                        >
+                          <Edit className="w-4 h-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleDeleteAccount(account.id)}
+                          className="p-1.5 text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300"
+                          aria-label="Delete account"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                )
+              })}
             </div>
           )}
         </div>
